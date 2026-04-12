@@ -1,14 +1,16 @@
 import { useState, useMemo } from "react";
 import { getExpenses, categories, categoryEmojis, categoryColors } from "@/lib/expenses";
+import { generateInsights } from "@/lib/insights";
 import { startOfWeek, startOfMonth, endOfWeek, endOfMonth, isWithinInterval, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, Lightbulb } from "lucide-react";
 
 type Period = "week" | "month";
 
 export default function Insights() {
   const [period, setPeriod] = useState<Period>("month");
   const expenses = getExpenses();
+  const smartInsights = useMemo(() => generateInsights(), [expenses]);
 
   const now = new Date();
   const interval = period === "week"
@@ -32,6 +34,12 @@ export default function Insights() {
       .filter((c) => c.amount > 0)
       .sort((a, b) => b.amount - a.amount);
   }, [filtered]);
+
+  const insightStyles = {
+    warning: "bg-orange-50 border-orange-200 text-orange-900 dark:bg-orange-950/30 dark:border-orange-800 dark:text-orange-200",
+    positive: "bg-emerald-50 border-emerald-200 text-emerald-900 dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-200",
+    info: "bg-blue-50 border-blue-200 text-blue-900 dark:bg-blue-950/30 dark:border-blue-800 dark:text-blue-200",
+  };
 
   return (
     <div className="px-5 pt-6 pb-24 max-w-md mx-auto">
@@ -62,7 +70,7 @@ export default function Insights() {
       </div>
 
       {/* Total Card */}
-      <div className="animate-scale-in bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-3xl p-6 mb-8 shadow-lg relative overflow-hidden">
+      <div className="animate-scale-in bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-3xl p-6 mb-6 shadow-lg relative overflow-hidden">
         <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-primary-foreground/10" />
         <div className="absolute -right-2 -bottom-8 h-32 w-32 rounded-full bg-primary-foreground/5" />
         <p className="text-sm font-medium opacity-80">Total this {period}</p>
@@ -73,6 +81,31 @@ export default function Insights() {
           </div>
         </div>
       </div>
+
+      {/* Smart Insights */}
+      {smartInsights.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5 animate-fade-in">
+            <Lightbulb className="h-3.5 w-3.5" />
+            Smart Insights
+          </h2>
+          <div className="space-y-2">
+            {smartInsights.map((insight, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded-2xl border p-3.5 text-sm font-medium animate-fade-in-up flex items-start gap-2.5",
+                  insightStyles[insight.type]
+                )}
+                style={{ animationDelay: `${0.1 + i * 0.08}s`, opacity: 0 }}
+              >
+                <span className="text-lg shrink-0 mt-0.5">{insight.emoji}</span>
+                <span>{insight.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Breakdown */}
       <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4 animate-fade-in" style={{ animationDelay: "0.15s" }}>
