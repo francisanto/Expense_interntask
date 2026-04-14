@@ -137,7 +137,7 @@ This project is open source and available under the MIT License.
 
 ## 👨‍💻 Author
 
-**Francis Santo**
+**Francis anto**
 - GitHub: [@francisanto](https://github.com/francisanto)
 
 ## 🎯 Future Enhancements
